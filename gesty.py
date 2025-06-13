@@ -22,7 +22,7 @@ class Gesty:
 
     def otwarta_dlon(self, rysuj=False):
         '''Funkcja charakteryzuje wygląd ręki z otwartymi palcami
-        :reka: zmienna definiującą rękę
+        :self: zmienna wywodząca się z klasy definiująca rękę
         :rysuj: True - rysuje połączenia między charakterystycznymi punktami
         :return: napis jeżeli kciuk faktycznie będzie w górze'''
         knykcie_ids = [1, 5, 9, 13, 17]  
@@ -71,7 +71,7 @@ class Gesty:
 
     def kciuk_gora_dol(self, rysuj=False):
         '''Funkcja charakteryzuje wygląd ręki z kciukiem podniesionym do góry lub w dół
-        :reka: zmienna definiującą rękę
+        :self: zmienna wywodząca się z klasy definiująca rękę
         :rysuj: True - rysuje połączenia między charakterystycznymi punktami
         :return: napis jeżeli kciuk faktycznie będzie w górze'''
         czubki_ids = [8, 12, 16, 20]  # palce inne niż kciuk
@@ -129,7 +129,7 @@ class Gesty:
 
     def znak_ok(self, rysuj=False):
         '''Funkcja charakteryzuje wygląd ręki wykonującej gest "ok":
-        :reka: zmienna definiującą rękę
+        :self: zmienna wywodząca się z klasy definiująca rękę
         :rysuj: True - rysuje połączenia między charakterystycznymi punktami
         :return: napis jeżeli kciuk faktycznie będzie w górze'''
         czubki_ids = [12, 16, 20] # uwzględnienie tylko palca środkowego, serdecznego i małego
@@ -168,6 +168,61 @@ class Gesty:
 
         if kc_wsk_pol and wyprostowane_palce:
             return "👌 Ok"
+        return None
+
+    def pokoj(self, rysuj=True):
+        '''Funkcja charakteryzuje wygląd ręki wykonującej gest "ok":
+        :self: zmienna wywodząca się z klasy definiująca rękę
+        :rysuj: True - rysuje połączenia między charakterystycznymi punktami
+        :return: napis jeżeli kciuk faktycznie będzie w górze'''
+
+        czubek_wskaz = self.reka.landmark[8]
+        czubek_srod = self.reka.landmark[12]
+        srodkowy_trzeci = self.reka.landmark[14]
+        czubki_serd_maly_ids = [16, 20]
+        czubek_kciuk = self.reka.landmark[4]
+        odlegl_wskaz_srod = True
+        odlegl_nadg = True
+        odlegl_kciuk = True
+
+        wskaz_px, wskaz_py = konwert_znp(czubek_wskaz, self.klatka)
+        srod_px, srod_py = konwert_znp(czubek_srod, self.klatka)
+
+        dystans_wskazujacy_srodkowy = oblicz_odleglosc(czubek_wskaz, czubek_srod, wymiary=2)
+
+        kciuk_px, kciuk_py = konwert_znp(czubek_kciuk, self.klatka)
+        srod_trz_px, srod_trz_py = konwert_znp(srodkowy_trzeci, self.klatka)
+
+        dystans_kciuk_trzeci_srod = oblicz_odleglosc(czubek_kciuk, srodkowy_trzeci, wymiary=2)
+
+        if rysuj == True:
+            rysowanie_odleglosci(self.klatka, dystans_wskazujacy_srodkowy, wskaz_px, wskaz_py, srod_px, srod_py)
+            rysowanie_odleglosci(self.klatka, dystans_kciuk_trzeci_srod, kciuk_px, kciuk_py, srod_trz_px, srod_trz_py)
+        
+        for czubki_ids in czubki_serd_maly_ids:
+            czubek = self.reka.landmark[czubki_ids]
+            nadgarstek = self.reka.landmark[0]
+
+            czub_px, czub_py = konwert_znp(czubek, self.klatka)
+            nadg_px, nadg_py = konwert_znp(nadgarstek, self.klatka)
+
+            dystans_nadg = oblicz_odleglosc(czubek, nadgarstek, wymiary=2)
+
+            if rysuj == True:
+                rysowanie_odleglosci(self.klatka, dystans_nadg, czub_px, czub_py, nadg_px, nadg_py)
+            
+            if dystans_nadg > 0.18:
+                odlegl_nadg = False
+
+
+        if dystans_wskazujacy_srodkowy < 0.13:
+            odlegl_wskaz_srod = False
+            
+        if dystans_kciuk_trzeci_srod > 0.10:
+            odlegl_kciuk = False
+
+        if odlegl_wskaz_srod and dystans_nadg and odlegl_kciuk:
+            return "✌️ Pokój"
         return None
 
 
@@ -227,3 +282,21 @@ def rysowanie_odleglosci(klatka, dystans, x1, y1, x2, y2):
         print(f"Inny błąd podczas wizualizacji odległości: {e}")
 
     return rys
+
+# def oblicz_kat_miedzy_wektorami(p1, p2, p3):
+#     """Oblicza kąt (w stopniach) między wektorami p2→p1 i p2→p3"""
+#     # Wektory
+#     ba = [p1.x - p2.x, p1.y - p2.y]
+#     bc = [p3.x - p2.x, p3.y - p2.y]
+
+#     # Iloczyn skalarny i długości
+#     iloczyn = ba[0]*bc[0] + ba[1]*bc[1]
+#     dl_ba = math.sqrt(ba[0]**2 + ba[1]**2)
+#     dl_bc = math.sqrt(bc[0]**2 + bc[1]**2)
+
+#     # Kąt w radianach i stopniach
+#     if dl_ba * dl_bc == 0:
+#         return 0.0
+#     cos_kat = iloczyn / (dl_ba * dl_bc)
+#     kat = math.acos(max(min(cos_kat, 1), -1))  # zabezpieczenie przed błędem
+#     return math.degrees(kat)
