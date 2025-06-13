@@ -42,24 +42,33 @@ def dlonie_landmarks(pokaz_id=0):
 
         # Sprawdza czy na kamerze jest wykryta dłoń lub dłonie
         if results.multi_hand_landmarks:
-            # Jeżeli wykryta została dłoń, program rysuje punkty na niej
+            # Jeżeli wykryta została dłoń
             for reka in results.multi_hand_landmarks:
+                # Rysuje punkty na ręce 
                 mp_rysuj.draw_landmarks(klatka, reka, mp_dlonie.HAND_CONNECTIONS)
                 
+                # Importuje klasę "Gesty" z moduły gesty.py
                 gest = gesty.Gesty(reka, klatka)
 
+                # Definiuje listę gestów które przy pomocy lambdy się uruchamiają
                 lista_gestow = [
-                    lambda: gest.kciuk_gora_dol(rysuj=False),
+                    lambda: gest.kciuk_gora_dol(rysuj=False
+                    ),
                     lambda: gest.otwarta_dlon(rysuj=False),
-                    lambda: gest.znak_ok(rysuj=True)
+                    lambda: gest.znak_ok(rysuj=False),
+                    lambda: gest.pokoj(rysuj=True)
                 ]
 
+                # Definiuje wynik, czyli dany gest
                 wynik = None
+
+                # Pętla która wywołuje daną funkcję z listy
                 for funkcja in lista_gestow:
                     wynik = funkcja()
                     if wynik:
                         break
 
+                # Jeżeli program rozpozna jakiś gest, to wyprintuje informacje o nim, w przeciwnym wypadku jeżeli gestu nie rozpozna da info
                 if wynik:
                     print(wynik)
                 else:
